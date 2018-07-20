@@ -1,0 +1,36 @@
+#! /usr/bin/env python
+# -*- coding: utf-8 -*-
+#
+# by Zbigniew Karolczuk, 20 November 2017
+
+## IMPORTING PACKAGES WITH FUNCTIONS FROM REPOSITORY 
+from software.repository import mainFunctions as importDef
+from software.repository import webGenerator  as exportWeb
+from software.repository import makeDatabases as createDB
+
+## MAIN CATEGORIES STORED IN DICTIONARY - NEED TO BE DECLARED
+MAIN_CATEGORIES = {
+  "YEAR" : ["YEAR"], "TYPE" : ["TYPE"], "AIRCRAFT" : ["AIRCRAFT"],
+  "COMPANY" : ["COMPANY"], "AIRPORT" : ["DEPARTE","ARRIVAL"], "COUNTRY" : ["COUNTRY"]}
+
+## CREATING EMPTY DICTIONARIES, OTHERWISE THE SCRIPT FAILS DUE TO NOT DECLARED HASHES
+DROP_STATISTICS, PERFORM, FLIGHTS, BIGDATA, PROCESSING = ({} for i in range(5))
+
+## FETCHING DATA TO VARIOUS DATABASES
+createDB.databases(MAIN_CATEGORIES,DROP_STATISTICS,PERFORM,FLIGHTS,BIGDATA)
+
+## SELECTING DATA TO DISPLAY BASED ON DIFFERENT CRITERIA
+SELECT_DATA = {
+  "YEAR" : ["2011", "2017", "ALL"],
+  "TYPE" : ["ALL"],
+  "AIRPORT" : ["SR/V Oceanic Endeavour", "ALL"],
+  "COUNTRY" : ["ALL"],
+  "AIRCRAFT" : ["ALL"],
+  "COMPANY" : ["ALL"]
+  }
+
+## PROCESSING DATA FROM CSV
+createDB.bigdata(list(), SELECT_DATA.keys(), SELECT_DATA, MAIN_CATEGORIES, BIGDATA, DROP_STATISTICS, FLIGHTS, PROCESSING)
+
+## CREATING HTML WEBSITE
+exportWeb.html(PROCESSING, FLIGHTS, MAIN_CATEGORIES)

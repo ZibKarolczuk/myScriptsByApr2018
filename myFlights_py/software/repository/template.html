@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<!---->
+
+<!-- 
+// by Zbigniew Karolczuk, 20 November 2017 
+// http://www.color-hex.com/color/f5f7f5
+// http://www.colorhexa.com/f5f7f5
+// -->
+
+<!-- 
+FONTS:
+Palatino Linotype
+Trebuchet MS
+Georgia
+-->
+
+<!---->
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Zib's CGG Flights</title>
+<style>
+:root {
+  --font:    "Palatino Linotype";
+  --border:  #939493;
+  --monoOne: #f5f7f5;
+  --monoTwo: #e7ece7;
+  --mnoThre: #d9e0d9;
+  --trHover: var(--monoTwo);
+  --thHover: var(--mnoThre);
+  --txtMain: #7a7b7a;
+  --txtHver: #000000;
+  --boxFill: var(--border);
+  --boxText: var(--monoOne);
+}
+
+body {
+    font-family: var(--font);
+}
+
+/* Style the tab */
+div.tab {
+    overflow: hidden;
+    border: 1px solid var(--border);
+    background-color: var(--monoOne);
+}
+
+/* Style the buttons inside the tab */
+div.tab button {
+    background-color: inherit;
+    float: left;
+    border: none;
+    outline: none;
+    cursor: pointer;
+    padding: 14px 16px;
+    transition: 0.3s;
+    font-size: 17px;
+}
+
+/* Change background color of buttons on hover */
+div.tab button:hover {
+    background-color: var(--monoTwo);
+}
+
+/* Create an active/current tablink class */
+div.tab button.active {
+    background-color: var(--mnoThre);
+}
+
+/* Style the tab content */
+.tabcontent {
+  display: none;
+  padding: 6px 12px;
+  border: 1px solid var(--border);
+  border-top: none;
+  font-size: 14px;
+  line-height: 160%;
+}
+
+table {
+  border : 1.5px solid var(--border);
+  border-collapse: collapse;
+  text-align:center;
+  background-color: var(--monoOne);
+  color: var(--txtMain);
+  cursor: default;
+}
+
+table th,td {
+  border : 1.5px solid var(--border);
+  border-collapse: collapse;
+  text-align:center;
+  padding: 5px;
+}
+
+thead th:hover {
+  background-color: var(--thHover);
+}
+
+thead a:hover {
+  color: var(--txtHver);
+  cursor: pointer;
+}
+
+tbody td:hover, tr:hover {
+  background-color: var(--trHover);
+}
+
+tbody a:hover {
+  color: var(--txtHver);
+  cursor: pointer;
+}
+
+.tooltip {
+    position: relative;
+    display: inline-block;
+    /*border-bottom: 1px dotted black;*/
+}
+
+.tooltip .tooltipUpL {
+    visibility: hidden;
+    min-width: 400px;
+    max-height: 220px;
+    overflow-y: scroll;
+    background-color: var(--boxFill);
+    color: var(--boxText);
+    opacity: 0.85;
+    border-radius: 6px;
+    padding: 12px 12px;
+    text-align: left;
+    font-size: 12px;
+    line-height: normal;
+
+    /* Position the tooltip */
+    position: absolute;
+    top: -2px;
+    right: 101%;
+    z-index: 1;
+}
+
+.tooltip:hover .tooltipUpL {
+    visibility: visible;
+    position: center;
+}
+
+.tooltip .tooltipUpR {
+    visibility: hidden;
+    min-width: 400px;
+    max-height: 220px;
+    overflow-y: scroll;
+    background-color: var(--boxFill);
+    color: var(--boxText);
+    opacity: 0.85;
+    border-radius: 6px;
+    padding: 12px 12px;
+    text-align: left;
+    font-size: 12px;
+    line-height: normal;
+
+    /* Position the tooltip */
+    position: absolute;
+    top: -2px;
+    left: 101%;
+    z-index: 1;
+}
+
+.tooltip:hover .tooltipUpR {
+    visibility: visible;
+    position: center;
+}
+
+.tooltip .tooltipDwL {
+    visibility: hidden;
+    min-width: 400px;
+    max-height: 220px;
+    overflow-y: scroll;
+    background-color: var(--boxFill);
+    color: var(--boxText);
+    opacity: 0.85;
+    border-radius: 6px;
+    padding: 12px 12px;
+    text-align: left;
+    font-size: 12px;
+    line-height: normal;
+
+    /* Position the tooltip */
+    position: absolute;
+    bottom: -2px;
+    right: 101%;
+    z-index: 1;
+}
+
+.tooltip:hover .tooltipDwL {
+    visibility: visible;
+    position: center;
+}
+
+.tooltip .tooltipDwR {
+    visibility: hidden;
+    min-width: 400px;
+    max-height: 220px;
+    overflow-y: scroll;
+    background-color: var(--boxFill);
+    color: var(--boxText);
+    opacity: 0.85;
+    border-radius: 6px;
+    padding: 12px 12px;
+    text-align: left;
+    font-size: 12px;
+    line-height: normal;
+
+    /* Position the tooltip */
+    position: absolute;
+    bottom: -2px;
+    left: 101%;
+    z-index: 1;
+}
+
+.tooltip:hover .tooltipDwR {
+    visibility: visible;
+    position: center;
+}
+
+.tooltip .tooltipMin {
+    visibility: hidden;
+    min-width: 200px;
+    max-height: 220px;
+    overflow-y: scroll;
+    background-color: var(--boxFill);
+    color: var(--boxText);
+    opacity: 0.85;
+    border-radius: 6px;
+    padding: 12px 12px;
+    text-align: left;
+    font-size: 12px;
+    line-height: normal;
+
+    /* Position the tooltip */
+    position: absolute;
+    top: -2px;
+    right: 101%;
+    z-index: 1;
+}
+
+.tooltip:hover .tooltipMin {
+    visibility: visible;
+    position: center;
+}
+
+::-webkit-scrollbar {
+    width: 12px;
+}
+::-webkit-scrollbar-track {
+    -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3);
+    border-radius: 10px;
+}
+::-webkit-scrollbar-thumb {
+    border-radius: 10px;
+    -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.5);
+}
+
+</style>
+</head>
+<body>
+
+<div class="tab">
+  <button>#BUTTON</button>
+</div>
+<div>#TABLE</div>
+
+<script>
+function openTable(evt, tableName) {
+    var i, tabcontent, tablinks;
+    tabcontent = document.getElementsByClassName("tabcontent");
+    for (i = 0; i < tabcontent.length; i++) {
+        tabcontent[i].style.display = "none";
+    }
+    tablinks = document.getElementsByClassName("tablinks");
+    for (i = 0; i < tablinks.length; i++) {
+        tablinks[i].className = tablinks[i].className.replace(" active", "");
+    }
+    document.getElementById(tableName).style.display = "block";
+    evt.currentTarget.className += " active";
+}
+
+function sortStringsTable(n,datatable) {
+  var table, rows, switching, i, x, y, shouldSwitch, dir, switchcount = 0;
+  table = document.getElementById(datatable);
+  switching = true;
+  // Set the sorting direction to ascending:
+  dir = "asc";
+  /* Make a loop that will continue until
+  no switching has been done: */
+  while (switching) {
+    // Start by saying: no switching is done:
+    switching = false;
+    rows = table.getElementsByTagName("TR");
+    //alert(rows.length);
+    /* Loop through all table rows (except the
+    first, which contains table headers): */
+    for (i = 1; i < (rows.length - 1); i++) {
+      // Start by saying there should be no switching:
+      shouldSwitch = false;
+      /* Get the two elements you want to compare,
+      one from current row and one from the next: */
+      x = rows[i].getElementsByTagName("TD")[n];
+      y = rows[i + 1].getElementsByTagName("TD")[n];
+      a = parseFloat(rows[i].getElementsByTagName("TD")[0].childNodes[0].nodeValue);
+      b = parseFloat(rows[i + 1].getElementsByTagName("TD")[0].childNodes[0].nodeValue);
+      /* Check if the two rows should switch place,
+      based on the direction, asc or desc: */
+      if (dir == "asc") {
+        if (x.innerHTML.toLowerCase() < y.innerHTML.toLowerCase()) {
+          // If so, mark as a switch and break the loop:
+          shouldSwitch= true;
+          break;
+        }
+        else if (x.innerHTML.toLowerCase() == y.innerHTML.toLowerCase() && a > b) {
+          shouldSwitch= true;
+          break;
+        }
+      } else if (dir == "desc") {
+        if (x.innerHTML.toLowerCase() > y.innerHTML.toLowerCase() ) {
+          // If so, mark as a switch and break the loop:
+          shouldSwitch= true;
+          break;
+        }
+        else if (x.innerHTML.toLowerCase() == y.innerHTML.toLowerCase() && a > b) {
+          shouldSwitch= true;
+          break;
+        }
+      }
+    }
+    if (shouldSwitch) {
+      /* If a switch has been marked, make the switch
+      and mark that a switch has been done: */
+      rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+      switching = true;
+      // Each time a switch is done, increase this count by 1:
+      switchcount ++;
+    } else {
+      /* If no switching has been done AND the direction is "asc",
+      set the direction to "desc" and run the while loop again. */
+      if (switchcount == 0 && dir == "asc") {
+        dir = "desc";
+        switching = true;
+      }
+    }
+  }
+}
+
+function sortValuesTable(n,datatable) {
+  var table, rows, switching, i, x, y, shouldSwitch, dir, switchcount = 0;
+  table = document.getElementById(datatable);
+  switching = true;
+  // Set the sorting direction to ascending:
+  dir = "asc";
+  /* Make a loop that will continue until
+  no switching has been done: */
+  while (switching) {
+    // Start by saying: no switching is done:
+    switching = false;
+    rows = table.getElementsByTagName("TR");
+    //alert(rows.length);
+    /* Loop through all table rows (except the
+    first, which contains table headers): */
+    for (i = 1; i < (rows.length - 1); i++) {
+      // Start by saying there should be no switching:
+      shouldSwitch = false;
+      /* Get the two elements you want to compare,
+      one from current row and one from the next: */
+      x = rows[i].getElementsByTagName("TD")[n];
+      y = rows[i + 1].getElementsByTagName("TD")[n];
+      a = parseFloat(rows[i].getElementsByTagName("TD")[0].childNodes[0].nodeValue);
+      b = parseFloat(rows[i + 1].getElementsByTagName("TD")[0].childNodes[0].nodeValue);
+      /* Check if the two rows should switch place,
+      based on the direction, asc or desc: */
+      if (dir == "asc") {
+        if (parseFloat(x.childNodes[0].nodeValue) < parseFloat(y.childNodes[0].nodeValue)) {
+          // If so, mark as a switch and break the loop:
+          shouldSwitch= true;
+          break;
+        }
+        else if (parseFloat(x.childNodes[0].nodeValue) == parseFloat(y.childNodes[0].nodeValue) && a > b) {
+          shouldSwitch= true;
+          break;
+        }
+      } else if (dir == "desc") {
+        if (parseFloat(x.childNodes[0].nodeValue) > parseFloat(y.childNodes[0].nodeValue)) {
+          // If so, mark as a switch and break the loop:
+          shouldSwitch= true;
+          break;
+        }
+        else if (parseFloat(x.childNodes[0].nodeValue) == parseFloat(y.childNodes[0].nodeValue) && a > b) {
+          shouldSwitch= true;
+          break;
+        }
+      }
+    }
+    if (shouldSwitch) {
+      /* If a switch has been marked, make the switch
+      and mark that a switch has been done: */
+      rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+      switching = true;
+      // Each time a switch is done, increase this count by 1:
+      switchcount ++;
+    } else {
+      /* If no switching has been done AND the direction is "asc",
+      set the direction to "desc" and run the while loop again. */
+      if (switchcount == 0 && dir == "asc") {
+        dir = "desc";
+        switching = true;
+      }
+    }
+  }
+}
+
+// Get the element with id="defaultOpen" and click on it
+document.getElementById("defaultOpen").click();
+</script>
+     
+</body>
+</html> 

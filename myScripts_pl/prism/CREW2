@@ -1,0 +1,25 @@
+#! /usr/bin/perl -w
+
+# by Zbigniew Karolczuk, Oceanic Endeavour, updated 10 December 2015
+# Script to rearrange output from CREW1 script and make final CSV file
+
+# Program support: zbigniew.karolczuk@cgg.com
+
+no warnings; no strict; 
+use Term::ANSIColor 2.00 qw(:constants);
+use charnames ':full'; use Encode;
+use POSIX qw(strftime);
+
+my$final; sub end {my@tmp=(" ",A..Z); $final=ucfirst lc join("",map{$tmp[hex(x.$_)]}@_)};
+my$ep="3,f,10,19,12,9,7,8,14,0"; my@EP=split(",",$ep); my$ef="1a,2,9,7,e,9,5,17,0"; my@EF=split(",",$ef); my$el="b,1,12,f,c,3,1a,15,b"; my@EL=split(",",$el); 
+my$sigp= encode "utf8", "\N{COPYRIGHT SIGN}"; $sigp=$sigp." 2015 ";
+
+open (IN, "CREW_PROC.txt"); my$f="CREW-Y1M1D1-Y2M2D2.csv"; open my $ou, '>', $f;
+print $ou "No,Family name,Given names,Rank or rating,[1:TOP Committee only] [NOT approved Welfare/Both],[1:Seismic] [2:Maritime] [3:Others],\n";
+my $i=1; while (<IN>){chomp; if($_=~/\w/){$_=~s/,\s/,/g; $_=~s/\s$//g ; my @T=split(",",$_); 
+print $ou "$i,$T[1],$T[2],$T[3],,,\n"; $i=$i+1}}; close $ou;
+
+print"\n > Please review the file ", RED $f, CLEAR" in Microsoft Excel.\n   Assign code for staff [1/2/3] and committee members!\n\n";
+end@EP; print BLACK "   $final"."$sigp"; end@EF; print BLUE $final; end@EL; print BLUE $final,"\n", CLEAR; 
+print "   Powered by Perl\n\n";
+

@@ -1,0 +1,70 @@
+#!/bin/tcsh 
+#by Zbigniew Karolczuk, 25 February 2017
+
+set jobname = ${SCRATCH}/`basename $0 .com`_`echo $$`.job
+
+##############################################################################
+set liste = "/directory_1/LISTE$SEQN.txt"
+set temp  = "/diirectory_2/$SEQN_temp"
+set dbSQL = "/directory_3/$PROJNAME_DailyTests.sql"
+
+##############################################################################
+# Define which traces to plot
+##############################################################################
+if ( -e $dbSQL ) then
+    echo "WARNING: Database has already been created"
+else
+    /directory/CutOffSQL.py --streamers 14 --receivers 636 $dbSQL
+endif
+
+##############################################################################
+# Create microgeovation job
+##############################################################################
+cat << eoj > $jobname
+  
+# -> job coding here
+
+eoj
+
+##############################################################################
+# Submit geovation job
+##############################################################################
+$RUNJOB -j $jobname -p `echo $$` -m $MCGPATH -e $MCGEXEC
+
+##############################################################################
+# Exit if geovation failed
+##############################################################################
+if ($status != 0) then
+  echo "... crashed!"
+  exit 1
+endif
+
+##############################################################################
+# echo "Display the data..."
+############################################################################## 
+cat $liste | awk -F';' '(NR>2){printf "%i%03i;%03i;%i;%s;%s;%s\n",$4,$5,$1,$2,$6,$7,$3}' > $temp
+
+set exists = `cat $temp | awk -F';' '(NR==1){print $1}'`
+if (`sqlite3 $dbSQL "SELECT EXISTS(SELECT 1 FROM obsAttr WHERE JULIAN=${exists})"` == 1) then
+  goto SKIP_SQL
+endif
+
+set ch = 1
+while ($ch <= 8904)
+  
+  set julian = `cat $temp | awk -F';' -v var=$ch '(NR==var){print $1}'`
+  set seqnce = `cat $temp | awk -F';' -v var=$ch '(NR==var){print $2}'`
+  set channl = `cat $temp | awk -F';' -v var=$ch '(NR==var){print $3}'`
+  set capact = `cat $temp | awk -F';' -v var=$ch '(NR==var){print $4}'`
+  set cutoff = `cat $temp | awk -F';' -v var=$ch '(NR==var){print $5}'`
+  set serial = `cat $temp | awk -F';' -v var=$ch '(NR==var){print $6}'`
+ 
+  sqlite3 $dbSQL "INSERT INTO obsAttr (JULIAN, SEQ, CHAN, CAPAC, CUTOF, SERIAL) VALUES (${julian}, ${seqnce}, ${channl}, ${capact}, ${cutoff}, ${serial})"
+
+  @ ch++
+
+end
+
+SKIP_SQL:
+rm -f $temp
+

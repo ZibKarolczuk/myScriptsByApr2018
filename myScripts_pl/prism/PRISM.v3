@@ -1,0 +1,156 @@
+#! /usr/bin/perl -w 
+
+# by Zbigniew Karolczuk, Oceanic Endeavour, updated 10 December 2015
+# Script to calculate points for uniqe ID and produce input files for excel
+
+# Program support: zbigniew.karolczuk@cgg.com
+
+my$title="Oceanic Endeavour Rotation C & D";
+
+no warnings; no strict;
+use Data::Dumper; $Data::Dumper::Sortkeys = 1;
+use Term::ANSIColor 2.00 qw(:constants);
+use charnames ':full'; use Encode;
+use POSIX qw(strftime);
+use File::Copy;
+use Time::localtime;
+
+my (%calY, $i, $u, $nmbr, $clSG, @list, %crew, @name, %TABLE, $text, %VISA);
+
+%calY=('01','January','02','February','03','March','04','April','05','May','06','June','07','July','08','August','09','September','10','October','11','November','12','December');
+my %calR = reverse %calY; my %calS; foreach (keys %calY) { my $mnth=$calY{$_} ; ($mnth =~ s/(^.{3})/$1/) ; $calS{$1}=$_ ; }; my %cals = reverse %calS;
+
+sub rcrd { chomp; s/\x0D//; s/(\d+)-(\w+)-(\d+)/$3$calS{$2}$1/;};
+sub nmbr { chomp; s/\x0D//; $_ =~ /(^.{8})/; $nmbr = $1;};
+sub dsgg { chomp; s/\x0D//; $_ =~ /(^\d+)-(\w+)-(\d+),/; if (length ($1) == 1) {$clSG="20".$3.$calS{$2}."0".$1 } elsif (length ($1) == 2) {$clSG="20".$3.$calS{$2}.$1};};
+sub list { chomp; s/\x0D//; @list = split (',',$_);};
+sub end {my@tmp=(" ",A..Z,"-",0..9,",",".","/","@"); $text=ucfirst lc join("",map{$tmp[hex(x.$_)]}@_)};
+sub who {my@tmp=(" ",A..Z,"-",0..9,",",".","/","@"); $text=lc join("",map{$tmp[hex(x.$_)]}@_)};
+
+my$ep="3,f,10,19,12,9,7,8,14,0"; my@EP=split(",",$ep); my$ef="1a,2,9,7,e,9,5,17,0"; my@EF=split(",",$ef); my$el="b,1,12,f,c,3,1a,15,b"; my@EL=split(",",$el); 
+my$sigp= encode "utf8", "\N{COPYRIGHT SIGN}"; $sigp=$sigp." 2015 ";
+end@EL; $ka=$text; end@EF; $zb=$text;
+my$au="1,15,14,f,12,9,1a,1,14,9,f,e,0,6,1,9,c,5,4,26,0,3,f,e,14,1,3,14,0"; my@AU=split(",",$au); end@AU; $au=$text;
+my$mc=$ef.",27,".$el.",29,3,7,7,27,3,f,d"; my@MC=split(",",$mc); who@MC; $mc=$text;
+my$mp=$el.",27,1a,29,7,d,1,9,c,27,3,f,d"; my@MP=split(",",$mp); who@MP; $mp=$text;
+my$pg="10,5,12,d,9,13,13,9,f,e,0,7,12,1,e,14,5,4"; my@PG=split(",",$pg); end@PG; $pg=$text;
+my$ex=2016177; my$at=sprintf "%d%03i", localtime->year()+1900, localtime->yday();
+
+# #### ### ## # ## ### #### #
+#if($at<$ex){print "\n  $pg!"}else{print "\n  $au", BLUE "$zb $ka", CLEAR "\n  ", BLUE $mc, CLEAR " / $mp\n\n";exit(0)};
+# #### ### ## # ## ### #### #
+
+system(clear);
+
+print BLUE "\n     WELCOME TO ", BOLD RED "TOP POINTS", CLEAR BLUE " CALCULATION TOOL!\n", CLEAR;
+print "\n     Select the ", RED "first day", CLEAR " for PRISM reports (format DD-MM-YYYY): "; chomp (my $inpS = <STDIN>); my $CL_S=$inpS; $inpS =~ s/(\d+)-(\d+)-(\d+)/$3$2$1/g;
+print   "     Select the ", RED "last  day", CLEAR " for PRISM reports (format DD-MM-YYYY): "; chomp (my $inpE = <STDIN>); my $CL_E=$inpE; $inpE =~ s/(\d+)-(\d+)-(\d+)/$3$2$1/g; 
+
+if ($inpE < $inpS) { $inpE = strftime "%Y%m%d",localtime; $CL_E = strftime "%d %B %Y",localtime}  else {$CL_E =~ s/(\d+)-(\d+)-(\d+)/$1 $calY{$2} $3/};
+$CL_S =~ s/(\d+)-(\d+)-(\d+)/$1 $calY{$2} $3/; my $in_s = $inpS ; $in_s =~ s/^.{2}//; my $in_e = $inpE ; $in_e =~ s/^.{2}//; print "\n";
+
+print BLUE "     Crew Lists Available:\n", CLEAR; my @fls = <CREW/*.csv>; $i=1; my@I; foreach (@fls) { $_ =~ s/(\w+)\/(\w+)/$2/g ; printf " %02d. $_\n", $i; push(@I,$i); $i++; }
+print "\n     ", BLUE "Select ", RED "Crew List", BLUE " file", CLEAR ": ";chomp (my $fl = <STDIN>); if ($fl~~@I){$fl=$fls[$fl-1]} elsif($fl=~m/C\S+\.csv/){$fl=$fl} else {print RED "\n     BAD CHOICE, TRY AGAIN!\n\n", CLEAR; exit(0)}; open (CRW, "CREW/$fl");
+
+open (TOP, "LIBR/TaskObservations.csv"); open (HAZ, "LIBR/Hazards.csv"); open (IMP, "LIBR/ImproveSuggestions.csv"); open (XIN, "LIBR/X-Inspections.csv"); open (VIS, "LIBR/VISA_PointsPrev.csv");
+ 
+# #### ### ## # ## ### #### #
+
+my @tops; my @locs; $i=0; while (<TOP>) { rcrd($_); nmbr(); if ($i==0){$i=$i+1;} elsif ($nmbr>($inpS-1) && $nmbr<($inpE+1)) {if ($_ =~ m/\d+,/) {my@TMP; 
+if($_=~m/\"/){@TMP=split("\"",$_); $TMP[0]=~s/,//g; $TMP[1]="\"".$TMP[1]."\""; $TMP[2]=~s/,//g;} else{@TMP=split(",",$_)}; push (@tops,$TMP[1]); push (@locs,$TMP[2]); $i++;}}}; my $sm_t=@tops; my $sm_l=@locs;
+
+my @hazs; $i=0; while (<HAZ>) { rcrd($_); nmbr(); if ($i==0){$i=$i+1;} elsif ($nmbr>($inpS-1) && $nmbr<($inpE+1)) {if ($_ =~ s/\d+,//g) {push (@hazs,$_); $i++;}}}; my $sm_h=@hazs;
+
+$i=0; while (<CRW>) { list($_); 
+$crew{$i}{'Ordr'}=$list[0]; $crew{$i}{'Fmly'}=$list[1]; $crew{$i}{'Name'}=$list[2]; $crew{$i}{'Rank'}=$list[3]; $crew{$i}{'Comm'}=$list[4]; $crew{$i}{'Crew'}=$list[5]; 
+push (@name, $list[1]); $i++;}; shift @name; my $qty = @name;
+
+my @all = @tops; push (@all,@hazs); my %uq_a = map {$_ => 1} (@all); my @logA = sort {lc($a) cmp lc($b)} (keys %uq_a);
+foreach (@logA) { $TABLE{$_}{'TOP'}=0; $TABLE{$_}{'HAZ'}=0;}
+
+my %tp_c; ++$tp_c{$_} for @tops; my @tp_k = keys %tp_c; foreach (@tp_k) {$TABLE{$_}{'TOP'}=$tp_c{$_};}
+my %hz_c; ++$hz_c{$_} for @hazs; my @hz_k = keys %hz_c; foreach (@hz_k) {$TABLE{$_}{'HAZ'}=$hz_c{$_};}
+
+# #### ### ## # ## ### #### #
+
+my @xins; $i=0; while (<XIN>) {rcrd ($_); nmbr (); if ($i==0){$i=$i+1;} elsif ($nmbr>($inpS-1) && $nmbr<($inpE+1)) {
+my @xin=split(',',$_); if($xin[1]=~/cross-inspections/i){shift @xin; shift @xin; my $long=@xin; 
+if ($long==0){$u=$nmbr; $u =~ s/(^.{4})(.{2})(.{2})/Logged: $3-$cals{$2}-$1/} else {$u =join(",",@xin);}; push (@xins,$u); $i++;}}}; my $sm_x=@xins;
+my %uq_x = map {$_ => 1} (@xins); my @logX = sort {lc($a) cmp lc($b)} (keys %uq_x);
+my (%xi_c,%XINS); ++$xi_c{$_} for @xins; my @xi_k = keys %xi_c; foreach (@xi_k) {$XINS{$_}=$xi_c{$_};}
+
+my @imps; $i=0; while (<IMP>) { dsgg($_); dsgg(); if ($i==0){$i=$i+1;} elsif ($clSG>($inpS-1) && $clSG<($inpE+1)) {if ($_ =~ s/^\d+-\w+-\d+,//g) {push (@imps,$_); $i++;}}}; my $sm_i=@imps;
+my %uq_i = map {$_ => 1} (@imps); my @logI = sort {lc($a) cmp lc($b)} (keys %uq_i);
+my (%im_c,%IMPR); ++$im_c{$_} for @imps; my @im_k = keys %im_c; foreach (@im_k) {$IMPR{$_}=$im_c{$_};}
+
+# #### ### ## # ## ### #### #
+
+my %uq_l = map {$_ => 1} (@locs); my @logL = sort {lc($a) cmp lc($b)} (keys %uq_l);
+my (%lc_c,%lctn,%LCTN); ++$lc_c{$_} for @locs; my @lc_k = keys %lc_c; foreach (@lc_k) {$lctn{$_}=$lc_c{$_};}
+my @lc_h = sort {$b <=> $a} (values %lctn); my @lc_H = @lc_h[0,1];
+foreach (keys %lctn) { if ($lctn{$_} ~~ @lc_H){ $LCTN{$_}{'s1'}=0; $LCTN{$_}{'s2'}=$lctn{$_};} else{ $LCTN{$_}{'s1'}=$lctn{$_}; $LCTN{$_}{'s2'}=0;}};  
+
+# #### ### ## # ## ### #### #
+
+my$i=0; while (<VIS>) {my@t=(); if($i>1 && $_=~m/^,\s\w+/){chomp; s/\x0D//; @t=split(',',$_); $t[1]=~s/^\s//g; $t[2]=~s/^\s//g; $VISA{$i}{Fmly}=$t[1]; $VISA{$i}{Name}=$t[2]; $VISA{$i}{Lgcy}=$t[8]}++$i};
+my@V=sort{$a<=>$b}keys%VISA; my$k=@V;
+
+# #### ### ## # ## ### #### #
+
+unlink glob "TEMP/*.csv"; copy("BCKP/REPORT_MASTER.v3.xlsm","TEMP/PRISM-$in_s-$in_e.xlsm");
+
+my $output = ",Title ->,Number of observations vs. Locations being observed : $CL_S - $CL_E";
+open (my $LC, '>' , "TEMP/LCTN-$in_s-$in_e.csv"); 
+$i=1; foreach (sort @lc_k){ if ($i==1) {print $LC "$_,$LCTN{$_}{'s1'},$LCTN{$_}{'s2'},$output\n";} else {print $LC "$_,$LCTN{$_}{'s1'},$LCTN{$_}{'s2'},\n"}; $i++;} 
+close $LC;
+
+open (my $OA, '>' , "TEMP/SHRT-$in_s-$in_e.csv"); 
+print $OA ",$title : $CL_S - $CL_E,\n"; $i=1; while ($i<($qty+1)){my$l="UNKNOWN"; foreach (@V) {if(($VISA{$_}{Fmly} eq $crew{$i}{Fmly}) && ($VISA{$_}{Name} eq $crew{$i}{Name})){$l=$VISA{$_}{Lgcy}}};
+print $OA "$crew{$i}{'Fmly'};$crew{$i}{'Name'};$crew{$i}{'Rank'},$crew{$i}{'Fmly'},$crew{$i}{'Name'},$crew{$i}{'Rank'},$l,$crew{$i}{'Ordr'},$crew{$i}{'Crew'},,,,$crew{$i}{'Comm'},\n"; $i++;}; 
+print $OA ",\n";
+print $OA "," x 6 ."TOP,HAZ". "," x 3 ."Log in PRISM,,\n";
+foreach my $x (@logA) { my @exst; $i=1; foreach my $y (@name) { 
+if ($x =~ m/$y/i) { push (@exst,$i);} else {$i++}}; $i++; my $long=@exst; my $id; 
+if ($long==1) {$id=$crew{$exst[0]}{'Fmly'}.";".$crew{$exst[0]}{'Name'}.";".$crew{$exst[0]}{'Rank'}} else { $id=""}; 
+print $OA "," x 6 ."$TABLE{$x}{TOP},$TABLE{$x}{HAZ}"."," x 3 ."$x,$id,\n"; } ;
+print $OA "," x 6 . "$sm_t,$sm_h" . "," x 3 . "CHECKSUM TOP & HAZ,,\n";
+close $OA;
+
+open (RA, "TEMP/SHRT-$in_s-$in_e.csv");
+open (my $OE, '>' , "TEMP/LONG-$in_s-$in_e.csv");
+while (<RA>) {chomp ($_); print $OE "$_\n";}
+print $OE ",\n";
+print $OE "," x 8 ."X-INS,,Log in PRISM,,\n";
+foreach my $x (@logX) { my @exst; $i=1; foreach my $y (@name) { 
+if ($x =~ m/$y/i) { push (@exst,$i);} else {$i++}}; $i++; my $long=@exst; my $id; 
+if ($long==1) {$id=$crew{$exst[0]}{'Fmly'}.";".$crew{$exst[0]}{'Name'}.";".$crew{$exst[0]}{'Rank'}} else { $id=""};
+print $OE "," x 8 ."$XINS{$x},,$x,$id,\n"; } ;
+print $OE "," x 8 . "$sm_x,,CHECKSUM X-INS,,\n";
+print $OE ",\n";
+print $OE "," x 9 ."Q-IMP,Log in PRISM,,\n";
+foreach my $x (@logI) { my @exst; $i=1; foreach my $y (@name) { 
+if ($x =~ m/$y/i) { push (@exst,$i);} else {$i++}}; $i++; my $long=@exst; my $id; 
+if ($long==1) {$id=$crew{$exst[0]}{'Fmly'}.";".$crew{$exst[0]}{'Name'}.";".$crew{$exst[0]}{'Rank'}} else { $id=""};
+print $OE "," x 9 ."$IMPR{$x},$x,$id,\n"; } ;
+print $OE "," x 9 . "$sm_i,CHECKSUM Q-IMP,,\n";
+close $OE;
+
+# #### ### ## # ## ### #### #
+
+print "\n     ", BLUE "PRISM", CLEAR ": ", UNDERLINE "$CL_S", RESET " to ", UNDERLINE "$CL_E", CLEAR "\n     ", BLUE "SAVED", CLEAR ": TEMP/", RED "PRISM-$in_s-$in_e.xlsm\n\n", CLEAR;
+print   "  >  Number of ", BLUE "Observations", CLEAR ": ", RED "$sm_t\n", CLEAR;
+print   "  >  Number of ", BLUE "Hazards", CLEAR ": ", RED "$sm_h\n", CLEAR;
+print   "  >  Number of ", BLUE "X-Inspections", CLEAR ": ", RED "$sm_x\n", CLEAR;
+print   "  >  Number of ", BLUE "Imp. Suggestions", CLEAR ": ", RED "$sm_i\n\n", CLEAR;
+
+end@EP; print BLACK "     $text"."$sigp"; end@EF; print BLUE $text; end@EL; print BLUE $text,"\n", CLEAR; 
+print "     Powered by Perl\n\n";
+
+# #### ### ## # ## ### #### #
+# #### ### ####### ### #### #
+# ~~~~ FINAL CHECK ~~~~
+# print Dumper \%calS;
+# print Dumper \%crew;
+# print Dumper \%VISA;
+# #### ### ####### ### #### #
+# #### ### ## # ## ### #### #

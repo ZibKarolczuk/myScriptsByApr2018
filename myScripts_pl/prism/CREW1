@@ -1,0 +1,41 @@
+#! /usr/bin/perl -w
+
+# by Zbigniew Karolczuk, Oceanic Endeavour, updated 10 December 2015
+# Script to create Crew List from PDF files. Output must be checked
+
+# Program support: zbigniew.karolczuk@cgg.com
+
+my@long_jbtitle=("Chief", "Client", "Party", "S/L", "Gravity", "MSO", "Geoscience","Equipment"); 
+my$long_country="(united|russian|serbia)";
+
+no warnings; no strict; 
+use Term::ANSIColor 2.00 qw(:constants);
+use charnames ':full'; use Encode;
+use POSIX qw(strftime);
+
+my$final; sub end {my@tmp=(" ",A..Z); $final=ucfirst lc join("",map{$tmp[hex(x.$_)]}@_)};
+my$ep="3,f,10,19,12,9,7,8,14,0"; my@EP=split(",",$ep); my$ef="1a,2,9,7,e,9,5,17,0"; my@EF=split(",",$ef); my$el="b,1,12,f,c,3,1a,15,b"; my@EL=split(",",$el); 
+my$sigp= encode "utf8", "\N{COPYRIGHT SIGN}"; $sigp=$sigp." 2015 ";
+
+my$dir="raw.txt"; my$o="CREW_PROC.txt"; my(@F,$f,$c); 
+opendir(DIR,"raw.txt"); while(my$f = readdir(DIR)){push(@F,$dir."/".$f) if $f=~/\w/}; closedir(DIR); 
+
+open my $ou,'>',$o; foreach my$f(@F){my@E; open (IN,$f); while (<IN>){chomp; s/\x0D//; push(@E,$_);
+my$e=join(' ',@E); $e=~s/(\d{2}\.\d{2}\.\d{4})/$1\n/g;my@X=split('\n',$e);
+foreach my$x(@X){if($x=~/\d+\s+\w.+,\s+.+\s+\w+\s+\d{2}\.\d{2}\.\d{4}/){
+$x=~s/^.+\D(\d\d?\s+\w.+,\s+.+\s+\w+\s+\d{2}\.\d{2}\.\d{4})/$1/;
+$x=~m/^(\d\d?)(\s+\w.+,.+)\s+\w+\s+\d{2}\.\d{2}\.\d{4}/; my$l=$1; my$i=$2;
+$i=~s/$long_country(.+)?//i;$i=~/(.+)\s(\w+)\s(.+)/; my$s=$1; my$n=$2; my$r=$3; 
+if($n~~@long_jbtitle||$n=~/\d+.+/){print $ou "$l,$s, $n $r\n"}else{print $ou "$l,$s $n, $r\n"};}}}};close $ou;
+
+my%Q; my$i=1; open(I1,$o); while(<I1>){chomp;my@l=split(',',$_); foreach my$x(@l){$x=~s/^\s//g};
+$c=0; foreach my$k(keys%Q){if(($Q{$k}{S}=~m/$l[1]/)&&($Q{$k}{N}=~m/$l[2]/)){$c=1}else{}};
+if($c eq 0){$Q{$i}{L}=$l[0];$Q{$i}{S}=$l[1];$Q{$i}{N}=$l[2];$Q{$i}{R}=$l[3];};$i++};
+
+open my $ou,'>',$o; foreach(sort{$a<=>$b}keys%Q){print $ou "$Q{$_}{L}, $Q{$_}{S}, $Q{$_}{N}, $Q{$_}{R}\n"};close $ou;
+print "\n > Please review the file ", RED $o , CLEAR " for any mistakes.\n   You can move person without changing numbering!\n\n";
+end@EP; print BLACK "   $final"."$sigp"; end@EF; print BLUE $final; end@EL; print BLUE $final,"\n", CLEAR; 
+print "   Powered by Perl\n\n";
+
+sleep 5; system ("gedit $o");
+
